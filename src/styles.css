@@ -1,0 +1,136 @@
+/* General resets */
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #F2E0D2; /* oat milk */
+  display: flex;
+  justify-content: center;
+  align-items: center; /* vertically center whole content */
+  height: 100vh;
+  margin: 0;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Status text */
+.status {
+  font-size: 28px;
+  font-weight: 600;
+  color: #9E182B; /* red wine */
+  text-align: center;
+  text-transform: capitalize;
+  font-style: italic;
+}
+
+/* Board styling */
+.board {
+  width: 320px;
+  height: 320px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 8px;
+  background-color: #F9CBD6; /* rose quartz */
+  border-radius: 16px;
+  position: relative;
+  padding: 10px;
+  box-shadow: 0 8px 15px rgba(158, 24, 43, 0.3);
+}
+
+/* Square styling */
+.square {
+  background-color: #F2AFBC; /* blush */
+  border: 2px solid #9E182B; /* red wine */
+  font-size: 52px;
+  font-weight: bold;
+  color: #9E182B; /* red wine */
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  user-select: none;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(158, 24, 43, 0.2);
+}
+
+.square:hover:not(:disabled) {
+  background-color: #9E182B; /* red wine */
+  color: #F2E0D2; /* oat milk */
+}
+
+.square:disabled {
+  cursor: not-allowed;
+  color: #AA6B7A;
+  background-color: #F5D6DD;
+}
+
+/* Strike line base */
+.strike-line {
+  position: absolute;
+  background-color: #9E182B; /* red wine */
+  z-index: 10;
+  border-radius: 6px;
+  pointer-events: none;
+}
+
+/* Horizontal strike lines */
+.strike-horizontal-top,
+.strike-horizontal-middle,
+.strike-horizontal-bottom {
+  height: 5px;
+  width: 90%;
+  left: 5%;
+}
+
+.strike-horizontal-top {
+  top: 19%;
+}
+
+.strike-horizontal-middle {
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.strike-horizontal-bottom {
+  bottom: 19%;
+}
+
+/* Vertical strike lines */
+.strike-vertical-left,
+.strike-vertical-center,
+.strike-vertical-right {
+  width: 5px;
+  height: 90%;
+  top: 5%;
+}
+
+.strike-vertical-left {
+  left: 19%;
+}
+
+.strike-vertical-center {
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.strike-vertical-right {
+  right: 19%;
+}
+
+/* Diagonal strike lines */
+.strike-diagonal-1,
+.strike-diagonal-2 {
+  width: 5px;
+  height: 140%;
+  top: -20%;
+  left: 50%;
+  transform-origin: center;
+}
+
+.strike-diagonal-1 {
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.strike-diagonal-2 {
+  transform: translateX(-50%) rotate(-45deg);
+}
