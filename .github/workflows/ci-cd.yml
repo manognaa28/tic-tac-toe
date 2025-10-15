@@ -37,9 +37,15 @@ jobs:
         with:
           context: .
           push: true
-          tags: ghcr.io/${{ github.repository }}:${{ github.sha }}
-          sign: true
-          cosign: true
+          tags: |
+            ghcr.io/${{ github.repository }}:${{ github.sha }}
+            ghcr.io/${{ github.repository }}:latest
+
+      - name: Sign Docker image with Cosign
+        uses: sigstore/cosign-action@v2
+        with:
+          image: ghcr.io/${{ github.repository }}:${{ github.sha }}
+          keyless: true
 
       - name: Run Trivy scan
         uses: aquasecurity/trivy-action@0.26.0
