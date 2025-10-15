@@ -1,39 +1,51 @@
-name: CI/CD Secure Tic-Tac-Toe App
+name: CI/CD Pipeline - Secure Tic-Tac-Toe
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
   pull_request:
+    branches:
+      - main
 
 env:
-  IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/tic-tac-toe
+  IMAGE_NAME: ghcr.io/${{ github.repository }}
+
+permissions:
+  contents: read
+  packages: write
+  security-events: write
+  id-token: write   # required for keyless Cosign signing
 
 jobs:
   build-scan-push-sign:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      id-token: write   # required for keyless Cosign signing
-      packages: write
 
     steps:
       # 1. Checkout code
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. Setup Docker Buildx
+      # 2. Set up Docker Buildx
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      # 3. Log in to GHCR
-      - name: Log in to GitHub Container Registry
+      # 3. Docker Hub Login
+      - name: Docker Hub Login
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      # 4. GHCR Login
+      - name: Log in to GHCR
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # 4. Set Docker image tags
+      # 5. Set Docker image tags
       - name: Set Docker image tags
         id: image_tags
         run: |
@@ -43,7 +55,7 @@ jobs:
           echo "date_tag=$DATE_TAG" >> $GITHUB_OUTPUT
           echo "latest_tag=latest" >> $GITHUB_OUTPUT
 
-      # 5. Build & Push Docker Image
+      # 6. Build & Push Docker Image
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
@@ -55,7 +67,7 @@ jobs:
             ${{ env.IMAGE_NAME }}:${{ steps.image_tags.outputs.date_tag }}
             ${{ env.IMAGE_NAME }}:latest
 
-      # 6. Scan Docker image with Trivy
+      # 7. Scan Docker image with Trivy
       - name: Scan Docker image with Trivy
         uses: aquasecurity/trivy-action@0.26.0
         with:
@@ -66,28 +78,28 @@ jobs:
           ignore-unfixed: true
           vuln-type: os,library
 
-      # 7. Upload Trivy SARIF to code scanning
+      # 8. Upload Trivy SARIF to GitHub code scanning
       - name: Upload Trivy SARIF to code scanning
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: trivy-results.sarif
 
-      # 8. Install Cosign
+      # 9. Install Cosign
       - name: Install Cosign
         uses: sigstore/cosign-installer@v3
 
-      # 9. Sign the image (keyless)
+      # 10. Sign the Docker image (keyless)
       - name: Sign Docker image with Cosign (keyless)
         run: |
           for TAG in ${{ steps.image_tags.outputs.sha_tag }} ${{ steps.image_tags.outputs.date_tag }} latest; do
             cosign sign ${{ env.IMAGE_NAME }}:$TAG --yes
           done
 
-      # 10. Verify the signature (keyless)
+      # 11. Verify Docker image signature (keyless)
       - name: Verify Docker image signature
         run: |
           for TAG in ${{ steps.image_tags.outputs.sha_tag }} ${{ steps.image_tags.outputs.date_tag }} latest; do
             cosign verify ${{ env.IMAGE_NAME }}:$TAG \
-            --certificate-identity-regexp ".*" \
-            --certificate-oidc-issuer-regexp "https://token.actions.githubusercontent.com"
+              --certificate-identity-regexp ".*" \
+              --certificate-oidc-issuer-regexp "https://token.actions.githubusercontent.com"
           done
