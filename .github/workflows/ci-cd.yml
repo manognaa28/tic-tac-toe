@@ -42,7 +42,7 @@ jobs:
             ghcr.io/${{ github.repository }}:latest
 
       - name: Sign Docker image with Cosign
-        uses: sigstore/cosign-action@v2
+        uses: sigstore/cosign@v2
         with:
           image: ghcr.io/${{ github.repository }}:${{ github.sha }}
           keyless: true
