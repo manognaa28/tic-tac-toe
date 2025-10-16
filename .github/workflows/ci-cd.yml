@@ -67,16 +67,17 @@ jobs:
             ${{ env.IMAGE_NAME }}:${{ steps.image_tags.outputs.date_tag }}
             ${{ env.IMAGE_NAME }}:latest
 
-      # 7. Scan Docker image with Trivy
+      # 7. Scan Docker image with Trivy (OS + Library vulnerabilities)
       - name: Scan Docker image with Trivy
         uses: aquasecurity/trivy-action@0.26.0
         with:
           image-ref: ${{ env.IMAGE_NAME }}:${{ steps.image_tags.outputs.sha_tag }}
-          format: sarif
-          output: trivy-results.sarif
-          severity: CRITICAL,HIGH
-          ignore-unfixed: true
-          vuln-type: os,library
+          vuln-type: 'os,library'             # Scan both OS packages and app libraries
+          severity: 'CRITICAL,HIGH,MEDIUM'    # Show all serious issues
+          ignore-unfixed: false               # Include unfixed vulnerabilities too
+          format: 'table'                     # Readable log output
+          output: trivy-results.sarif         # Still generate SARIF file for GitHub Security tab
+          exit-code: '1'                      # ❗ Fail the job if vulnerabilities are found
 
       # 8. Upload Trivy SARIF to GitHub code scanning
       - name: Upload Trivy SARIF to code scanning
